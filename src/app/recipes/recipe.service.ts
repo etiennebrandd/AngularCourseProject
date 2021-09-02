@@ -1,0 +1,68 @@
+import { Injectable } from "@angular/core";
+import { Subject } from "rxjs";
+import { Ingredient } from "../shared/ingredient.model";
+import { ShoppingListService } from "../shopping-list/shopping-list.service";
+import { Recipe } from "./recipe.model";
+
+@Injectable()
+export class RecipeService {
+
+  recipesChanged = new Subject<Recipe[]>();
+
+  // private recipes: Recipe[] = [
+  //   new Recipe('Burger',
+  //   'Almost-Famous Animal-Style Burger',
+  //   'data:image/jpeg;base64,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',
+  //   [
+  //     new Ingredient('Beef patty', 1),
+  //     new Ingredient('Brioche Bun', 1),
+  //     new Ingredient('Lettuce', 1),
+  //     new Ingredient('Tomato', 2)
+  //   ]),
+  //   new Recipe('Hotdog',
+  //   'Loaded Hotdog',
+  //   'https://cdn.vox-cdn.com/thumbor/KwaiI_GdXnY4N-KHD509jBa4jpE=/0x0:765x491/1200x900/filters:focal(322x185:444x307):no_upscale()/cdn.vox-cdn.com/uploads/chorus_image/image/64752069/best_hot_dogs_london.0.jpg',
+  //   [
+  //     new Ingredient('Hotdog bun', 1),
+  //     new Ingredient('Sausage', 1),
+  //     new Ingredient('Onion', 2),
+  //     new Ingredient('Ketchup', 1)
+  //   ])
+  // ];
+
+  private recipes: Recipe[] = [];
+
+  constructor(private slService: ShoppingListService) {}
+
+  getRecipes() {
+    return this.recipes.slice();
+  }
+
+  getRecipe(index: number) {
+    return this.recipes[index];
+  }
+
+  addIngredientsSL(ingredients: Ingredient[]) {
+    this.slService.addIngredients(ingredients);
+  }
+
+  addRecipe(recipe: Recipe) {
+    this.recipes.push(recipe);
+    this.recipesChanged.next(this.recipes.slice());
+  }
+
+  updateRecipe(index: number, newRecipe: Recipe) {
+    this.recipes[index] = newRecipe;
+    this.recipesChanged.next(this.recipes.slice());
+  }
+
+  deleteRecipe(index: number) {
+    this.recipes.splice(index, 1);
+    this.recipesChanged.next(this.recipes.slice());
+  }
+
+  setRecipes(recipes: Recipe[]) {
+    this.recipes = recipes;
+    this.recipesChanged.next(this.recipes.slice());
+  }
+}
